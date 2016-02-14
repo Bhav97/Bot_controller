@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Bot control</string>
+    <string name="error1">no bluetooth adapters in devices</string>
+    <string name="error2">no paired devices found.</string>
+    <string name="noconnect">Connection Failed. Is it a SPP Bluetooth? Try again.</string>
+    <string name="connected">Connected.</string>
+    <string name="broadcasterr">Error: could not send data. Check Connection.</string>
+    <string name="first">Device not found? Pair with it in Android Settings and then try again.</string>
+    <string name="refresh">Refresh</string>
+</resources>
