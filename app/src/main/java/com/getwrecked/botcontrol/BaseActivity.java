@@ -12,7 +12,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -22,16 +21,18 @@ import android.widget.Toast;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.os.AsyncTask;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.UUID;
-import android.content.Intent;
 
 
 public class BaseActivity extends Activity {
     RelativeLayout layout_joystick;
-    TextView textView1, textView2, textView3, textView4, textView5;
+    TextView textView1, textView2, textView3, textView4, textView5, Console;
     JoyStickClass js;
     Toast mLastToast;
     Button button2;
@@ -39,23 +40,30 @@ public class BaseActivity extends Activity {
     SeekBar speed;
     private ProgressDialog progress;
     BluetoothAdapter myBluetooth = null;
-    BluetoothSocket btSocket = null;
+    private BluetoothSocket btSocket = null;
+    private BufferedReader btBufferedReader = null;
     private boolean isBtConnected = false;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    private static final String TAG = null;
+
 
 
     private class ConnectBT extends AsyncTask<Void, Void, Void> {
 
-        //receive the address of the bluetooth device
+        //receive the address from previous activity
         Intent newint = getIntent();
         String address = newint.getStringExtra(Devicelist.EXTRA_ADDRESS);
+        InputStream aStream = null;
+        InputStreamReader aReader = null;
+
 
         private boolean ConnectSuccess = true; //if it's here, it's almost connected
 
         @Override
         protected void onPreExecute()
         {
-            progress = ProgressDialog.show(BaseActivity.this, "Connecting...", "Please wait!!!");  //show a progress dialog
+            progress = ProgressDialog.show(BaseActivity.this, "Connecting...", "May the force be with you...");  //show a progress dialog
         }
 
         @Override
@@ -65,9 +73,9 @@ public class BaseActivity extends Activity {
             {
                 if (btSocket == null || !isBtConnected)
                 {
-                    myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
-                    BluetoothDevice dispositivo = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
-                    btSocket = dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID);//create a RFCOMM (SPP) connection
+                    myBluetooth = BluetoothAdapter.getDefaultAdapter();
+                    BluetoothDevice dispositivo = myBluetooth.getRemoteDevice(address);
+                    btSocket = dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID);
                     BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
                     btSocket.connect();//start connection
                 }
@@ -85,7 +93,7 @@ public class BaseActivity extends Activity {
 
             if (!ConnectSuccess)
             {
-                showToast(getString(R.string.noconnect), true);
+                showToast(getString(R.string.error3), true);
                 finish();
             }
             else
@@ -104,23 +112,26 @@ public class BaseActivity extends Activity {
             try
             {
                 btSocket.close(); //close connection
+            } catch (IOException e) {
+                showToast(getString(R.string.error6), false);
             }
-            catch (IOException e)
-            { showToast("Error", false);}
         }
         finish(); //return to the first layout
+    }
+
+    @Override
+    protected void onResume() {
+        // TODO Auto-generated method stub
+        super.onResume();
+
+        new ConnectBT().execute();
+
     }
 
         //// TODO: 2/14/16  add console for messages from arduino
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-
-        ConnectBT connectBT = new ConnectBT();
-        connectBT.onPreExecute();
-        //works for now (:
-        Void result = connectBT.doInBackground();
-        connectBT.onPostExecute(result);
+        setContentView(R.layout.activity_base);
 
         speed = (SeekBar)findViewById(R.id.seekBar);
         button2 = (Button)findViewById(R.id.button2);
@@ -131,7 +142,8 @@ public class BaseActivity extends Activity {
         textView3 = (TextView)findViewById(R.id.textView3);
         textView4 = (TextView)findViewById(R.id.textView4);
         textView5 = (TextView)findViewById(R.id.textView5);
-
+        Console = (TextView) findViewById(R.id.Console);
+        btBufferedReader = new BufferedReader(aReader)
         layout_joystick = (RelativeLayout)findViewById(R.id.layout_joystick);
 
         button2.setOnClickListener(new View.OnClickListener() {
@@ -148,15 +160,13 @@ public class BaseActivity extends Activity {
         });
 
         js = new JoyStickClass(getApplicationContext()
-                , layout_joystick, R.drawable.image_button);
+                , layout_joystick, R.drawable.image_button_2);
         js.setStickSize(150, 150);
         js.setLayoutSize(500, 500);
         js.setLayoutAlpha(150);
         js.setStickAlpha(100);
         js.setOffset(90);
         js.setMinimumDistance(50);
-
-
 
         layout_joystick.setOnTouchListener(new OnTouchListener() {
             public boolean onTouch(View arg0, MotionEvent arg1) {
@@ -170,42 +180,42 @@ public class BaseActivity extends Activity {
 
                     int direction = js.get8Direction();
                     if(direction == JoyStickClass.STICK_UP) {
-                        textView5.setText("Direction : Up");
+                        textView5.setText(R.string.up);
                         forward();
                     } else if(direction == JoyStickClass.STICK_UPRIGHT) {
-                        textView5.setText("Direction : Up Right");
+                        textView5.setText(R.string.upright);
                         forwardright();
                     } else if(direction == JoyStickClass.STICK_RIGHT) {
-                        textView5.setText("Direction : Right");
+                        textView5.setText(R.string.right);
                         right();
                     } else if(direction == JoyStickClass.STICK_DOWNRIGHT) {
-                        textView5.setText("Direction : Down Right");
+                        textView5.setText(R.string.downright);
                         backwardright();
                     } else if(direction == JoyStickClass.STICK_DOWN) {
-                        textView5.setText("Direction : Down");
+                        textView5.setText(R.string.down);
                         backward();
                     } else if(direction == JoyStickClass.STICK_DOWNLEFT) {
-                        textView5.setText("Direction : Down Left");
+                        textView5.setText(R.string.downleft);
                         backwardleft();
                     } else if(direction == JoyStickClass.STICK_LEFT) {
-                        textView5.setText("Direction : Left");
+                        textView5.setText(R.string.left);
                         left();
                     } else if(direction == JoyStickClass.STICK_UPLEFT) {
-                        textView5.setText("Direction : Up Left");
+                        textView5.setText(R.string.upleft);
                         forwardleft();
                     } else if(direction == JoyStickClass.STICK_NONE) {
-                        textView5.setText("Direction : Center");
+                        textView5.setText(R.string.center);
                         release();
                     }
                     else {
                         release();
                     }
                 } else if(arg1.getAction() == MotionEvent.ACTION_UP) {
-                    textView1.setText("X :");
-                    textView2.setText("Y :");
-                    textView3.setText("Angle :");
-                    textView4.setText("Distance :");
-                    textView5.setText("Direction :");
+                    textView1.setText(R.string.x);
+                    textView2.setText(R.string.y);
+                    textView3.setText(R.string.angle);
+                    textView4.setText(R.string.distance);
+                    textView5.setText(R.string.direction);
                 }
                 return true;
             }
@@ -247,7 +257,7 @@ public class BaseActivity extends Activity {
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 
@@ -258,7 +268,7 @@ public class BaseActivity extends Activity {
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 
@@ -269,7 +279,7 @@ public class BaseActivity extends Activity {
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 
@@ -280,7 +290,7 @@ public class BaseActivity extends Activity {
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 
@@ -291,7 +301,7 @@ public class BaseActivity extends Activity {
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 
@@ -302,7 +312,7 @@ public class BaseActivity extends Activity {
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 
@@ -313,7 +323,7 @@ public class BaseActivity extends Activity {
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 
@@ -324,7 +334,7 @@ public class BaseActivity extends Activity {
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 
@@ -332,10 +342,11 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("9".getBytes());
+            Console.setText(getText(R.id.Console) + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
-            showToast(getString(R.string.broadcasterr), false);
+            showToast(getString(R.string.error4), false);
         }
     }
 

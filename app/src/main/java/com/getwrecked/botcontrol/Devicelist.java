@@ -28,9 +28,6 @@ public class Devicelist extends AppCompatActivity {
     Toast mLastToast;
 
     private BluetoothAdapter myBluetooth;
-    //private Set pairedDevices;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +45,6 @@ public class Devicelist extends AppCompatActivity {
             finish();
         }
         else {
-            if (!myBluetooth.isEnabled()) {
-                //Ask user to turn bluetooth on.
-                Intent turnBTon = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(turnBTon , 1);
-            }
             pairedDeviceList();
         }
 
@@ -64,23 +56,26 @@ public class Devicelist extends AppCompatActivity {
         });
     }
 
-
-
     private void pairedDeviceList() {
         Set<BluetoothDevice> pairedDevices = myBluetooth.getBondedDevices();
         List<String> list = new ArrayList<>();
 
-        if (pairedDevices.size() > 0) {
-            for (BluetoothDevice bt : pairedDevices)
-                list.add(bt.getName() + "\n" + bt.getAddress()); //list out name and address.
+        if (!myBluetooth.isEnabled()) {
+            //Ask user to turn bluetooth on.
+            Intent turnBTon = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(turnBTon, 1);
         }
         else {
-            showToast(getString(R.string.error2) , false);
+            if (pairedDevices.size() > 0) {
+                for (BluetoothDevice bt : pairedDevices)
+                    list.add(bt.getName() + "\n" + bt.getAddress()); //list out name and address.
+            } else {
+                showToast(getString(R.string.error2), false);
+            }
+            final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
+            deviceList.setAdapter(adapter);
+            deviceList.setOnItemClickListener(myClickListener); //new method
         }
-
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
-        deviceList.setAdapter(adapter);
-        deviceList.setOnItemClickListener(myClickListener); //new method
 
     }
 
@@ -101,7 +96,7 @@ public class Devicelist extends AppCompatActivity {
     void showToast(String text, boolean longDuration) {
         if (mLastToast != null) mLastToast.cancel();
         mLastToast = Toast.makeText(Devicelist.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
-        mLastToast.setGravity(Gravity.TOP, 0, 0);
+        mLastToast.setGravity(Gravity.BOTTOM, 0, 0);
         mLastToast.show();
     }
 }
