@@ -45,7 +45,7 @@ public class BaseActivity extends Activity {
     private boolean isBtConnected = false;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    private static final String TAG = null;
+    //private static final String TAG = null;
 
 
 
@@ -54,8 +54,7 @@ public class BaseActivity extends Activity {
         //receive the address from previous activity
         Intent newint = getIntent();
         String address = newint.getStringExtra(Devicelist.EXTRA_ADDRESS);
-        InputStream aStream = null;
-        InputStreamReader aReader = null;
+
 
 
         private boolean ConnectSuccess = true; //if it's here, it's almost connected
@@ -67,7 +66,7 @@ public class BaseActivity extends Activity {
         }
 
         @Override
-        protected Void doInBackground(Void... devices) //while the progress dialog is shown, the connection is done in background
+        protected Void doInBackground(Void... devices) //background task
         {
             try
             {
@@ -121,17 +120,20 @@ public class BaseActivity extends Activity {
 
     @Override
     protected void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
 
         new ConnectBT().execute();
 
     }
 
+
         //// TODO: 2/14/16  add console for messages from arduino
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        super.onStop();
         setContentView(R.layout.activity_base);
+        //InputStream aStream = null;
+        //InputStreamReader aReader;
 
         speed = (SeekBar)findViewById(R.id.seekBar);
         button2 = (Button)findViewById(R.id.button2);
@@ -143,7 +145,9 @@ public class BaseActivity extends Activity {
         textView4 = (TextView)findViewById(R.id.textView4);
         textView5 = (TextView)findViewById(R.id.textView5);
         Console = (TextView) findViewById(R.id.Console);
-        btBufferedReader = new BufferedReader(aReader)
+        //aStream = btSocket.getInputStream();
+        //aReader = new InputStreamReader( aStream );
+        //btBufferedReader = new BufferedReader(aReader);
         layout_joystick = (RelativeLayout)findViewById(R.id.layout_joystick);
 
         button2.setOnClickListener(new View.OnClickListener() {
@@ -254,6 +258,7 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("1".getBytes());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
@@ -265,6 +270,7 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("2".getBytes());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
@@ -276,6 +282,7 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("3".getBytes());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
@@ -287,6 +294,7 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("4".getBytes());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
@@ -298,6 +306,7 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("5".getBytes());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
@@ -309,6 +318,7 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("6".getBytes());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
@@ -320,6 +330,7 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("7".getBytes());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
@@ -331,6 +342,7 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("8".getBytes());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
         }
         catch (IOException e)
         {
@@ -342,7 +354,15 @@ public class BaseActivity extends Activity {
         try
         {
             btSocket.getOutputStream().write("9".getBytes());
-            Console.setText(getText(R.id.Console) + btBufferedReader.readLine());
+            //Console.setText(Console.getText() + "\n" + btBufferedReader.readLine());
+        } catch (IOException e) {
+            showToast(getString(R.string.error4), false);
+        }
+    }
+
+    void setSpeed(char a) {
+        try {
+            btSocket.getOutputStream().write(a);
         }
         catch (IOException e)
         {

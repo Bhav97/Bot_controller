@@ -1,5 +1,6 @@
 package com.getwrecked.botcontrol;
 
+import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -19,7 +20,7 @@ import android.content.Intent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 
-public class Devicelist extends AppCompatActivity {
+public class Devicelist extends Activity {
 
     public static String EXTRA_ADDRESS;
     ListView deviceList;
